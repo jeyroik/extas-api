@@ -1,33 +1,4 @@
 {
   "name": "extas/api",
-  "installer_version": 3,
-  "package_classes": [
-    {
-      "interface": "",
-      "class": ""
-    }
-  ],
-  "plugins_install": [
-    {
-      "repository": "",
-      "name": "",
-      "section": ""
-    }
-  ],
-  "plugins": [
-    {
-      "class": "",
-      "stage": "",
-      "priority": 0,
-      "parameters": {}
-    }
-  ],
-  "extensions": [
-    {
-      "class": "extas\\components\\extensions\\ExtensionRepositoryGet",
-      "interface": "extas\\interfaces\\extensions\\IExtensionRepositoryGet",
-      "subject": "*",
-      "methods": []
-    }
-  ]
+  "installer_version": 3
 }
