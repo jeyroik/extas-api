@@ -13,7 +13,8 @@
     "phpstan/phpstan": "0.*",
     "jeyroik/extas-snuffbox": "0.*",
     "jeyroik/extas-snuffbox-installer": "0.*",
-    "jeyroik/extas-repositories-get": "0.*"
+    "jeyroik/extas-repositories-get": "0.*",
+    "jeyroik/extas-installer": "3.*"
   },
   "autoload": {
     "psr-4": {
