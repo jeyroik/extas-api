@@ -10,3 +10,34 @@
 # Description
 
 Api for extas.
+
+# Using
+
+- `php -S 0.0.0.0:8080 -t vendor/jeyroik/extas-api/public`.
+- You can add your own routes with a plugin by stage `extas.api.app.init` (see `src/interfaces/extensions/IStageApiAppInit` for details).
+
+Plugin example:
+
+```php
+use extas\components\plugins\Plugin;
+use extas\interfaces\stages\IStageApiAppInit;
+use Slim\App;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+
+class PluginOwnRoute extends Plugin implements IStageApiAppInit
+{
+    /**
+     * @param App $app
+     */
+    public function __invoke(App &$app): void
+    {
+        $app->post(// post/get/delete/put/patch/any/
+            '/my/route',
+            function (RequestInterface $request, ResponseInterface $response, array $args) {
+                // dispatching 
+            }
+        );
+    }
+}
+```
