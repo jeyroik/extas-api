@@ -26,6 +26,7 @@ class AppTest extends TestCase
     protected function setUp(): void
     {
         putenv("EXTAS__CONTAINER_PATH_STORAGE_LOCK=vendor/jeyroik/extas-foundation/resources/container.dist.json");
+        is_dir(__DIR__ . '/../tmp') || mkdir(__DIR__ . '/../tmp', 777);
         $this->buildBasicRepos();
     }
 
