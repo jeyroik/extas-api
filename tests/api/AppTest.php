@@ -3,15 +3,11 @@ namespace tests\jsonrpc;
 
 use extas\interfaces\repositories\IRepository;
 use extas\interfaces\stages\IStageApiAppInit;
-
-use extas\components\extensions\ExtensionRepository;
 use extas\components\api\App;
-use extas\components\plugins\PluginRepository;
 use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 
 use PHPUnit\Framework\TestCase;
-use Dotenv\Dotenv;
 use tests\api\PluginFakeRoute;
 
 /**
@@ -29,24 +25,21 @@ class AppTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-        $env = Dotenv::create(getcwd() . '/tests/');
-        $env->load();
-        $this->registerSnuffRepos([
-            'extensionRepository' => ExtensionRepository::class,
-            'pluginRepository' => PluginRepository::class
-        ]);
+        putenv("EXTAS__CONTAINER_PATH_STORAGE_LOCK=vendor/jeyroik/extas-foundation/resources/container.dist.json");
+        $this->buildBasicRepos();
     }
 
     protected function tearDown(): void
     {
-        $this->unregisterSnuffRepos();
+        $this->dropDatabase(__DIR__);
+        $this->deleteRepo('plugins');
+        $this->deleteRepo('extensions');
     }
 
     public function testConstructing()
     {
         $app = App::create();
-        $this->assertCount(0, $app->getRouteCollector()->getRoutes());
+        $this->assertCount(0, $app->getRouteCollector()->getRoutes(), print_r($app->getRouteCollector()->getRoutes(), true));
 
         $this->createSnuffPlugin(PluginFakeRoute::class, [IStageApiAppInit::NAME]);
         $app = App::create();
