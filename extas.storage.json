@@ -1,0 +1,13 @@
+{
+    "name": "extas/api",
+    "tables": {
+        "routes": {
+            "namespace": "repositories",
+            "item_class": "\\extas\\components\\routes\\Route",
+            "pk": "id",
+            "code": {
+                "create-before": "\\extas\\components\\UUID::setId($item);"
+            }
+        }
+    }
+}

@@ -1,3 +1,7 @@
+# 1.1.0
+
+- Added `IRoute`, `Route`, `IHaveDispatcher`, `THasDispatcher`, `PluginRoutes`.
+
 # 1.0.1
 
 - Updated to dotenv v5
