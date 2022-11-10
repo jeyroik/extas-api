@@ -7,7 +7,7 @@ use extas\interfaces\stages\IStageApiListData;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * @property string $repoName
+ * @property string $repoName 
  * 
  * @method void setResponseData(array $data, string $errorMessage = '')
  * @method array getWhere()
