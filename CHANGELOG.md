@@ -1,3 +1,20 @@
+# 1.2.0
+
+- Added 
+ - `IRouteDispatcher` + `RouteDispatcher`
+ - `IJsonDispatcher` + `JsonDispatcher`
+ - `IHaveApiDescription` + `THasApiDescription`
+ - `IJsonSchemaV1`
+- Added tools to simplify CRUD constructing:
+ - `TRouteCreate`
+ - `TRouteView`
+ - `TRouteList`
+ - `TRouteUpdate`
+ - `TRouteDelete`
+ - `TRouteHelp`
+
+See tests for details.
+
 # 1.1.0
 
 - Added `IRoute`, `Route`, `IHaveDispatcher`, `THasDispatcher`, `PluginRoutes`.

@@ -1,15 +1,28 @@
 <?php
 namespace tests\jsonrpc;
 
-use extas\interfaces\repositories\IRepository;
-use extas\interfaces\stages\IStageApiAppInit;
-use extas\components\api\App;
+
+use extas\components\http\TSnuffHttp;
 use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 use extas\components\routes\Route;
+use extas\interfaces\stages\IStageApiDeleteData;
+use extas\interfaces\stages\IStageApiListData;
+use extas\interfaces\stages\IStageApiUpdateData;
+use extas\interfaces\stages\IStageApiValidateInputData;
+use extas\interfaces\stages\IStageApiViewData;
 use PHPUnit\Framework\TestCase;
-use tests\api\PluginFakeRoute;
+use tests\resources\PluginCreate;
+use tests\resources\PluginDelete;
+use tests\resources\PluginList;
+use tests\resources\PluginUpdate;
+use tests\resources\PluginView;
+use tests\resources\TestCreateDispatcher;
+use tests\resources\TestDeleteDispatcher;
 use tests\resources\TestDispatcher;
+use tests\resources\TestListDispatcher;
+use tests\resources\TestUpdateDispatcher;
+use tests\resources\TestViewDispatcher;
 
 /**
  * Class RouteTest
@@ -21,6 +34,7 @@ class RouteTest extends TestCase
 {
     use TSnuffRepository;
     use TSnuffPlugins;
+    use TSnuffHttp;
 
     protected function setUp(): void
     {
@@ -52,5 +66,203 @@ class RouteTest extends TestCase
         $r->setClass('unknown');
         $this->expectExceptionMessage('Missed or unknown class "unknown"');
         $r->buildDispatcher();
+    }
+
+    public function testDispatcherForCreate()
+    {
+        $this->createSnuffPlugin(PluginCreate::class, [IStageApiValidateInputData::NAME.'.create.routes']);
+
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => '\\extas\\components\\UUID::setId($item);'
+                ]
+            ]
+        ]);
+
+        $r = new Route();
+        $count = $r->routes()->all([]);
+        $this->assertEmpty($count);
+
+        $create = new TestCreateDispatcher(
+            $this->getPsrRequest('.create-true'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $create->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayHasKey('name', $result['data']);
+        $this->assertArrayHasKey('id', $result['data']);
+
+        $count = $r->routes()->all([]);
+        $this->assertCount(1, $count);
+
+        $createFalse = new TestCreateDispatcher(
+            $this->getPsrRequest('.create-false-local'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $createFalse->execute();
+        $this->assertEmpty($response->getBody().'', $response->getBody().'');
+
+        $createFalse = new TestCreateDispatcher(
+            $this->getPsrRequest('.create-false-plugin'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $createFalse->execute();
+        $this->assertEmpty(
+            $response->getBody().'',
+            'Plugin for stage "' . IStageApiValidateInputData::NAME.'.create.routes' . '" is not working'
+        );
+    }
+
+    public function testDispatcherForView()
+    {
+        $this->createSnuffPlugin(PluginView::class, [IStageApiViewData::NAME, IStageApiViewData::NAME . '.routes']);
+
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => '\\extas\\components\\UUID::setId($item);'
+                ]
+            ]
+        ]);
+
+        $r = new Route();
+        $r->routes()->create(new Route([
+            Route::FIELD__NAME => '/',
+            Route::FIELD__DESCRIPTION => 'test'
+        ]));
+
+        $view = new TestViewDispatcher(
+            $this->getPsrRequest('.view'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $view->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayHasKey('name', $result['data']);
+        $this->assertArrayHasKey('title', $result['data']);
+        $this->assertEquals('/', $result['data']['name']);
+    }
+
+    public function testDispatcherForUpdate()
+    {
+        $this->createSnuffPlugin(PluginUpdate::class, [IStageApiUpdateData::NAME, IStageApiUpdateData::NAME . '.routes']);
+
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => '\\extas\\components\\UUID::setId($item);'
+                ]
+            ]
+        ]);
+
+        $r = new Route();
+        $r->routes()->create(new Route([
+            Route::FIELD__NAME => '/'
+        ]));
+
+        $update = new TestUpdateDispatcher(
+            $this->getPsrRequest('.update'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $update->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayHasKey('name', $result['data']);
+        $this->assertArrayHasKey('description', $result['data']);
+    }
+
+    public function testDispatcherForDelete()
+    {
+        $this->createSnuffPlugin(PluginDelete::class, [IStageApiDeleteData::NAME, IStageApiDeleteData::NAME . '.routes']);
+
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => '\\extas\\components\\UUID::setId($item);'
+                ]
+            ]
+        ]);
+
+        $r = new Route();
+        $r->routes()->create(new Route([
+            Route::FIELD__NAME => '/'
+        ]));
+
+        
+        $delete = new TestDeleteDispatcher(
+            $this->getPsrRequest('.delete'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        // Plugin is running twice, so on the second try should be exception, cause route is already deleted.
+        $this->expectExceptionMessage('Missed or unknown route');
+        $delete->execute();
+
+        $r = new Route();
+        $count = $r->routes()->all([]);
+        $this->assertEmpty($count, print_r($count, true));
+    }
+
+    public function testDispatcherForList()
+    {
+        $this->createSnuffPlugin(PluginList::class, [IStageApiListData::NAME, IStageApiListData::NAME . '.routes']);
+
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => '\\extas\\components\\UUID::setId($item);'
+                ]
+            ]
+        ]);
+
+        $r = new Route();
+        $r->routes()->create(new Route([
+            Route::FIELD__NAME => '/'
+        ]));
+
+        
+        $list = new TestListDispatcher(
+            $this->getPsrRequest('.delete'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $list->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertCount(1, $result['data']);
+        $this->assertArrayHasKey('title', $result['data'][0]);
     }
 }
