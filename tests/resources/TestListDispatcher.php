@@ -16,6 +16,6 @@ class TestListDispatcher extends JsonDispatcher
 
     protected function getWhere(): array
     {
-        return [];
+        return $this->getRequestData();
     }
 }

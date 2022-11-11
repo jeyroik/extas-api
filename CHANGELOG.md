@@ -1,3 +1,7 @@
+# 1.2.1
+
+- Added test coverage.
+
 # 1.2.0
 
 - Added 

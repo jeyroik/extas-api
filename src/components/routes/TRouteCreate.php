@@ -6,6 +6,7 @@ use extas\components\extensions\TExtendable;
 use extas\components\Plugins;
 use extas\interfaces\stages\IStageApiValidateInputData;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
 
 /**
  * @method array getRequestData()
@@ -30,8 +31,8 @@ trait TRouteCreate
         $item = new $class($data);
         try {
             $item = $this->{$this->repoName}()->create($item);
-        } catch (AlreadyExist $e) {
-            $this->setJsonData($data, $e->getMessage());
+        } catch (\Exception $e) {
+            $this->setResponseData($data, $e->getMessage());
             return $this->response;
         }
 
