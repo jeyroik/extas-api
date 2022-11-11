@@ -6,12 +6,15 @@ use extas\components\http\TSnuffHttp;
 use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 use extas\components\routes\Route;
+use extas\components\SystemContainer;
+use extas\interfaces\routes\descriptions\IJsonSchemaV1;
 use extas\interfaces\stages\IStageApiDeleteData;
 use extas\interfaces\stages\IStageApiListData;
 use extas\interfaces\stages\IStageApiUpdateData;
 use extas\interfaces\stages\IStageApiValidateInputData;
 use extas\interfaces\stages\IStageApiViewData;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use tests\resources\PluginCreate;
 use tests\resources\PluginDelete;
 use tests\resources\PluginList;
@@ -20,6 +23,7 @@ use tests\resources\PluginView;
 use tests\resources\TestCreateDispatcher;
 use tests\resources\TestDeleteDispatcher;
 use tests\resources\TestDispatcher;
+use tests\resources\TestExceptionDispatcher;
 use tests\resources\TestListDispatcher;
 use tests\resources\TestUpdateDispatcher;
 use tests\resources\TestViewDispatcher;
@@ -264,5 +268,34 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertCount(1, $result['data']);
         $this->assertArrayHasKey('title', $result['data'][0]);
+        $this->deleteRepo('routes');
+    }
+
+    public function testDispatcherForException()
+    { 
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes2' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => 'throw new \\extas\\components\\exceptions\\AlreadyExist("route");'
+                ]
+            ]
+        ]);
+
+        $except = new TestExceptionDispatcher(
+            $this->getPsrRequest('.create-true'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $except->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result, print_r($result, true));
+
+        $this->deleteRepo('routes2');
     }
 }
