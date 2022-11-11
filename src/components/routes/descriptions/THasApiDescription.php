@@ -1,9 +1,8 @@
 <?php
 namespace extas\components\routes\descriptions;
 
-use lifecraft\interfaces\api\routes\IHaveRouteJson;
-use lifecraft\interfaces\api\IHaveApiDescription as i;
-use lifecraft\interfaces\api\IHaveApiDescription;
+use extas\interfaces\routes\descriptions\IHaveApiDescription as i;
+
 use ReflectionClass;
 
 trait THasApiDescription
@@ -22,15 +21,15 @@ trait THasApiDescription
 
     protected function getOutputParameters(string $doc, $forHelp): array
     {
-        $one = $this->getOutputOne($doc, $forHelp, IHaveApiDescription::OUTPUT__ONE);
+        $one = $this->getOutputOne($doc, $forHelp, i::OUTPUT__ONE);
 
         if (!empty($one)) {
             return $one;
         }
 
-        $many = $this->getOutputOne($doc, $forHelp, IHaveApiDescription::OUTPUT__MANY);
+        $many = $this->getOutputOne($doc, $forHelp, i::OUTPUT__MANY);
 
-        return [IHaveApiDescription::OUTPUT_FIELD__ITEMS => $many];
+        return [i::OUTPUT_FIELD__ITEMS => $many];
     }
 
     protected function getOutputOne(string $doc, bool $forHelp, string $pattern): array
@@ -114,8 +113,8 @@ trait THasApiDescription
 
             $this->attachInputType(
                 $result[$propertyName],
-                $matches[6][$index],
-                $this->convertTypeEdges($matches[7][$index]),
+                $matches[5][$index],
+                $this->convertTypeEdges($matches[6][$index]),
                 $forHelp
             );
         }
@@ -143,7 +142,7 @@ trait THasApiDescription
         return explode(',', $edges);
     }
 
-    protected function getInputMethod(string $doc, string $default = IHaveRouteJson::METHOD__GET): string
+    protected function getInputMethod(string $doc, string $default = 'get'): string
     {
         preg_match('/\@api__input_method\s(\S+)/', $doc, $matches);
 

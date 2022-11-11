@@ -298,4 +298,43 @@ class RouteTest extends TestCase
 
         $this->deleteRepo('routes2');
     }
+
+    public function testHelp()
+    { 
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes2' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => 'throw new \\extas\\components\\exceptions\\AlreadyExist("route");'
+                ]
+            ]
+        ]);
+
+        $except = new TestExceptionDispatcher(
+            $this->getPsrRequest('.create-true'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $except->help();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey('data', $result, print_r($result,true));
+        $this->assertArrayHasKey('request', $result['data'], print_r($result,true));
+        $this->assertArrayHasKey('method', $result['data']['request'], print_r($result,true));
+        $this->assertArrayHasKey('parameters', $result['data']['request'], print_r($result,true));
+        $this->assertArrayHasKey('id', $result['data']['request']['parameters'], print_r($result,true));
+        $this->assertArrayHasKey('name', $result['data']['request']['parameters'], print_r($result,true));
+
+        $this->assertArrayHasKey('response', $result['data'], print_r($result,true));
+        $this->assertArrayHasKey('name', $result['data']['response'], print_r($result,true));
+        $this->assertArrayHasKey('title', $result['data']['response'], print_r($result,true));
+        $this->assertArrayHasKey('description', $result['data']['response'], print_r($result,true));
+        $this->assertArrayHasKey('method', $result['data']['response'], print_r($result,true));
+        $this->assertArrayHasKey('class', $result['data']['response'], print_r($result,true));
+
+        $this->deleteRepo('routes2');
+    }
 }
