@@ -1,7 +1,6 @@
 <?php
-namespace tests\jsonrpc;
+namespace tests\api;
 
-use extas\interfaces\repositories\IRepository;
 use extas\interfaces\stages\IStageApiAppInit;
 use extas\components\api\App;
 use extas\components\plugins\PluginRoutes;
@@ -9,7 +8,6 @@ use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 use extas\components\routes\Route;
 use PHPUnit\Framework\TestCase;
-use tests\api\PluginFakeRoute;
 use tests\resources\TestDispatcher;
 
 /**

@@ -1,3 +1,14 @@
+# 1.3.0
+
+- Added stage `IStageInputDescription`.
+- Added stage `IStageOutputDescription`.
+- Added plugin `PluginInputValidators`.
+- Added plugin `PluginOutputValidators`.
+- Added `IValidator` interface.
+- Added class `Validator`.
+- Added validator `VUUID`.
+- Updated readme.
+
 # 1.2.2
 
 - Fixed api description.

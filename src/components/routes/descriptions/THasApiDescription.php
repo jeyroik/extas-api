@@ -1,8 +1,10 @@
 <?php
 namespace extas\components\routes\descriptions;
 
+use extas\components\Plugins;
 use extas\interfaces\routes\descriptions\IHaveApiDescription as i;
-
+use extas\interfaces\stages\IStageInputDescription;
+use extas\interfaces\stages\IStageOutputDescription;
 use ReflectionClass;
 
 trait THasApiDescription
@@ -15,6 +17,10 @@ trait THasApiDescription
         $result = [
             i::OUTPUT_FIELD__PARAMETERS => $this->getOutputParameters($doc, $forHelp)
         ];
+
+        foreach (Plugins::byStage(IStageOutputDescription::NAME) as $plugin) {
+            $plugin($result, $forHelp);
+        }
 
         return $result;
     }
@@ -86,6 +92,10 @@ trait THasApiDescription
             i::INPUT_FIELD__METHOD => $this->getInputMethod($doc),
             i::INPUT_FIELD__PARAMETERS => $this->getInputParameters($doc, $forHelp)
         ];
+
+        foreach (Plugins::byStage(IStageInputDescription::NAME) as $plugin) {
+            $plugin($result, $forHelp);
+        }
 
         return $result;
     }
