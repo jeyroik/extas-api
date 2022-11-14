@@ -1,12 +1,11 @@
 <?php
-namespace tests\jsonrpc;
+namespace tests\routes;
 
 
 use extas\components\http\TSnuffHttp;
 use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 use extas\components\routes\Route;
-use extas\components\SystemContainer;
 use extas\interfaces\routes\descriptions\IJsonSchemaV1;
 use extas\interfaces\stages\IStageApiDeleteData;
 use extas\interfaces\stages\IStageApiListData;
@@ -14,7 +13,6 @@ use extas\interfaces\stages\IStageApiUpdateData;
 use extas\interfaces\stages\IStageApiValidateInputData;
 use extas\interfaces\stages\IStageApiViewData;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use tests\resources\PluginCreate;
 use tests\resources\PluginDelete;
 use tests\resources\PluginList;

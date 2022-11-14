@@ -11,7 +11,8 @@
     "phpunit/phpunit": "^9",
     "vlucas/phpdotenv": "^5.5",
     "phpstan/phpstan": "0.*",
-    "jeyroik/extas-snuffbox": "1.*"
+    "jeyroik/extas-snuffbox": "1.*",
+    "ramsey/uuid": "4.*"
   },
   "autoload": {
     "psr-4": {
