@@ -8,9 +8,32 @@ use extas\interfaces\routes\descriptions\IJsonSchemaV1 as schema;
 
 abstract class JsonDispatcher extends RouteDispatcher implements IJsonDispatcher
 {
+    protected array $requestData = [];
+
+    protected function getRequestParameter(string $paramName, string $default = ''): mixed
+    {
+        $data = $this->getRequestData();
+
+        return $data[$paramName] ?? $default;
+    }
+
     protected function getRequestData(): array
     {
-        return json_decode($this->request->getBody()->getContents(), true);
+        if (empty($this->requestData)) {
+            $c = $this->request->getBody()->getContents();
+            $data = $this->args;
+
+            if ($c) { 
+                $data = array_merge(
+                    $data,
+                    json_decode($c, true)
+                );
+            }
+
+            $this->requestData = $data;
+        }
+
+        return $this->requestData;
     }
 
     protected function setResponseData(array $data, string $errorMessage = ''): void

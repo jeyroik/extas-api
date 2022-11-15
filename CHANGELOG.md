@@ -1,3 +1,10 @@
+# 1.4.0
+
+- Added `getRequestParameter(string $paramName, string $default = '')` (see https://github.com/jeyroik/extas-api/issues/14)
+- Improve `getRequestData()` - now it returns `args` data too (see https://github.com/jeyroik/extas-api/issues/13)
+- Fixed `getRequestData()` multiple calls.
+- Fixed `IRoute` description.
+  
 # 1.3.1
 
 - Fixed #11
