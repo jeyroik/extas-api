@@ -19,10 +19,13 @@ trait TRouteView
 
     public function execute(): ResponseInterface
     {
-        $item = $this->getItem();
-
-        $this->enrichData($item);
-        $this->setResponseData($item->__toArray());
+        try {
+            $item = $this->getItem();
+            $this->enrichData($item);
+            $this->setResponseData($item->__toArray());
+        } catch (\Exception $e) {
+            $this->setResponseData([], $e->getMessage());    
+        }
         
         return $this->response;
     }

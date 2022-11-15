@@ -1,3 +1,8 @@
+# 1.5.0
+
+- Added enrich stages for create and update.
+- Added bulletproof for all types of methods (create, update, list, view, delete).
+
 # 1.4.0
 
 - Added `getRequestParameter(string $paramName, string $default = '')` (see https://github.com/jeyroik/extas-api/issues/14)

@@ -18,15 +18,19 @@ trait TRouteList
 
     public function execute(): ResponseInterface
     {
-        $items = $this->getItems();
+        try {
+            $items = $this->getItems();
 
-        $this->enrichData($items);
-        $this->setResponseData($items);
+            $this->listData($items);
+            $this->setResponseData($items);
+        } catch (\Exception $e) {
+            $this->setResponseData([], $e->getMessage());
+        }
         
         return $this->response;
     }
 
-    protected function enrichData(array &$items): void
+    protected function listData(array &$items): void
     {
         foreach (Plugins::byStage(IStageApiListData::NAME) as $plugin) {
             $plugin($items, $this);
