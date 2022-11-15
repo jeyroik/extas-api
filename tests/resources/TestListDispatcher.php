@@ -16,6 +16,10 @@ class TestListDispatcher extends JsonDispatcher
 
     protected function getWhere(): array
     {
+        if ($this->getRequestParameter('fail', '') == 'yes') {
+            throw new \Exception('Fail');
+        }
+        
         return $this->getRequestData();
     }
 }

@@ -7,12 +7,14 @@ use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 use extas\components\routes\Route;
 use extas\interfaces\routes\descriptions\IJsonSchemaV1;
+use extas\interfaces\stages\IStageApiBeforeCreate;
 use extas\interfaces\stages\IStageApiDeleteData;
 use extas\interfaces\stages\IStageApiListData;
 use extas\interfaces\stages\IStageApiUpdateData;
 use extas\interfaces\stages\IStageApiValidateInputData;
 use extas\interfaces\stages\IStageApiViewData;
 use PHPUnit\Framework\TestCase;
+use tests\resources\PluginBeforeCreate;
 use tests\resources\PluginCreate;
 use tests\resources\PluginDelete;
 use tests\resources\PluginList;
@@ -124,7 +126,45 @@ class RouteTest extends TestCase
 
         $response = $createFalse->execute();
         $result = $this->getJsonRpcResponse($response);
-        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result, print_r($result, true));
+    }
+
+    public function testDispatcherForEnrichBeforeCreate()
+    {
+        $this->createSnuffPlugin(PluginBeforeCreate::class, [IStageApiBeforeCreate::NAME.'.routes']);
+
+        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
+            'routes' => [
+                'namespace' => 'tests\\tmp',
+                'item_class' => 'extas\\components\\routes\\Route',
+                'pk' => 'id',
+                'code' => [
+                    'create-before' => '\\extas\\components\\UUID::setId($item);'
+                ]
+            ]
+        ]);
+
+        $r = new Route();
+        $count = $r->routes()->all([]);
+        $this->assertEmpty($count);
+
+        $create = new TestCreateDispatcher(
+            $this->getPsrRequest('.create-true'),
+            $this->getPsrResponse(),
+            ['arg' => 'ok']
+        );
+
+        $response = $create->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey('data', $result, print_r($result, true));
+        $this->assertArrayHasKey('name', $result['data'], print_r($result['data'], true));
+        $this->assertArrayHasKey('id', $result['data'], print_r($result['data'], true));
+        $this->assertArrayHasKey('arg', $result['data'], print_r($result['data'], true));
+        $this->assertArrayHasKey('enriched', $result['data'], print_r($result['data'], true));
+
+        $count = $r->routes()->all([]);
+        $this->assertCount(1, $count);
     }
 
     public function testDispatcherForView()
@@ -161,6 +201,18 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey('name', $result['data']);
         $this->assertArrayHasKey('title', $result['data']);
         $this->assertEquals('/', $result['data']['name']);
+
+        $view = new TestViewDispatcher(
+            $this->getPsrRequest('.view-fail'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $view->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__DATA, $result);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
     }
 
     public function testDispatcherForUpdate()
@@ -195,6 +247,18 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayHasKey('name', $result['data']);
         $this->assertArrayHasKey('description', $result['data']);
+
+        $update = new TestUpdateDispatcher(
+            $this->getPsrRequest('.update-fail'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $update->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__DATA, $result);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
     }
 
     public function testDispatcherForDelete()
@@ -224,13 +288,27 @@ class RouteTest extends TestCase
             []
         );
 
-        // Plugin is running twice, so on the second try should be exception, cause route is already deleted.
-        $this->expectExceptionMessage('Missed or unknown route');
-        $delete->execute();
+        $response = $delete->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
+        $this->assertEquals('Missed or unknown route', $result[IJsonSchemaV1::FIELD__ERROR]);
 
         $r = new Route();
         $count = $r->routes()->all([]);
         $this->assertEmpty($count, print_r($count, true));
+
+        $delete = new TestDeleteDispatcher(
+            $this->getPsrRequest('.delete-fail'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $delete->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__DATA, $result);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
     }
 
     public function testDispatcherForList()
@@ -255,7 +333,7 @@ class RouteTest extends TestCase
 
         
         $list = new TestListDispatcher(
-            $this->getPsrRequest('.delete'),
+            $this->getPsrRequest('.list'),
             $this->getPsrResponse(),
             []
         );
@@ -266,6 +344,19 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertCount(1, $result['data']);
         $this->assertArrayHasKey('title', $result['data'][0]);
+
+        $list = new TestListDispatcher(
+            $this->getPsrRequest('.list-fail'),
+            $this->getPsrResponse(),
+            []
+        );
+
+        $response = $list->execute();
+        $result = $this->getJsonRpcResponse($response);
+
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__DATA, $result);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
+
         $this->deleteRepo('routes');
     }
 
