@@ -32,6 +32,6 @@ class TestCreateDispatcher extends JsonDispatcher
 
     protected function isName(array $data): bool
     {
-        return isset($data['name']);
+        return $this->getRequestParameter('name', '') !== '';
     }
 }

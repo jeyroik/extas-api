@@ -27,5 +27,6 @@ abstract class RouteDispatcher implements IRouteDispatcher
     }
 
     abstract protected function getRequestData(): array;
+    abstract protected function getRequestParameter(string $paramName, string $default = ''): mixed;
     abstract protected function setResponseData(array $data, string $errorMessage = ''): void;
 }

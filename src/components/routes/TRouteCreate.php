@@ -24,6 +24,7 @@ trait TRouteCreate
         $data = $this->getRequestData();
 
         if (!$this->isValidData($data)) {
+            $this->setResponseData([], 'Invalid data');
             return $this->response;
         }
 

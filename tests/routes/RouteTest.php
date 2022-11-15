@@ -92,15 +92,16 @@ class RouteTest extends TestCase
         $create = new TestCreateDispatcher(
             $this->getPsrRequest('.create-true'),
             $this->getPsrResponse(),
-            []
+            ['arg' => 'ok']
         );
 
         $response = $create->execute();
         $result = $this->getJsonRpcResponse($response);
 
-        $this->assertArrayHasKey('data', $result);
-        $this->assertArrayHasKey('name', $result['data']);
-        $this->assertArrayHasKey('id', $result['data']);
+        $this->assertArrayHasKey('data', $result, print_r($result, true));
+        $this->assertArrayHasKey('name', $result['data'], print_r($result['data'], true));
+        $this->assertArrayHasKey('id', $result['data'], print_r($result['data'], true));
+        $this->assertArrayHasKey('arg', $result['data'], print_r($result['data'], true));
 
         $count = $r->routes()->all([]);
         $this->assertCount(1, $count);
@@ -112,7 +113,8 @@ class RouteTest extends TestCase
         );
 
         $response = $createFalse->execute();
-        $this->assertEmpty($response->getBody().'', $response->getBody().'');
+        $result = $this->getJsonRpcResponse($response);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
 
         $createFalse = new TestCreateDispatcher(
             $this->getPsrRequest('.create-false-plugin'),
@@ -121,10 +123,8 @@ class RouteTest extends TestCase
         );
 
         $response = $createFalse->execute();
-        $this->assertEmpty(
-            $response->getBody().'',
-            'Plugin for stage "' . IStageApiValidateInputData::NAME.'.create.routes' . '" is not working'
-        );
+        $result = $this->getJsonRpcResponse($response);
+        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
     }
 
     public function testDispatcherForView()
