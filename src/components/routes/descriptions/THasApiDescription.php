@@ -56,7 +56,7 @@ trait THasApiDescription
     protected function getClassFieldsDescription(string $doc, bool $forHelp): array
     {
         preg_match_all(
-            '/\@field\.(.*)\(description="(.*)",type=(.*),edges\[(.*)\]/m',
+            '/\@field\.(.*)\(description="(.*)",type=(.*),edges=\[(.*)\]/m',
             $doc,
             $matches
         );

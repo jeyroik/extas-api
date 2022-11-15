@@ -1,3 +1,7 @@
+# 1.3.1
+
+- Fixed #11
+
 # 1.3.0
 
 - Added stage `IStageInputDescription`.
