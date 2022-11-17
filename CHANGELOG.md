@@ -1,3 +1,7 @@
+# 1.6.0
+
+- Added route `/help` with a list of all available routes. 
+
 # 1.5.0
 
 - Added enrich stages for create and update.
