@@ -4,6 +4,7 @@ namespace extas\components\routes;
 use extas\components\extensions\TExtendable;
 use extas\components\Plugins;
 use extas\interfaces\IItem;
+use extas\interfaces\stages\IStageApiAfterUpdate;
 use extas\interfaces\stages\IStageApiBeforeUpdate;
 use extas\interfaces\stages\IStageApiUpdateData;
 use Psr\Http\Message\ResponseInterface;
@@ -26,12 +27,24 @@ trait TRouteUpdate
 
             $this->enrichData($data);
             $this->updateData($item, $data);
+            $this->updated($item);
             $this->setResponseData($item->__toArray());
         } catch (\Exception $e) {
             $this->setResponseData([], $e->getMessage());
         }
         
         return $this->response;
+    }
+
+    protected function updated(IItem &$item): void
+    {
+        foreach(Plugins::byStage(IStageApiAfterUpdate::NAME) as $plugin) {
+            $plugin($item);
+        }
+
+        foreach(Plugins::byStage(IStageApiAfterUpdate::NAME . '.' . $this->repoName) as $plugin) {
+            $plugin($item);
+        }
     }
 
     protected function enrichData(array &$data): void
