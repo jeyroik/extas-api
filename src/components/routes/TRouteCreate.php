@@ -4,6 +4,8 @@ namespace extas\components\routes;
 use extas\components\exceptions\AlreadyExist;
 use extas\components\extensions\TExtendable;
 use extas\components\Plugins;
+use extas\interfaces\IItem;
+use extas\interfaces\stages\IStageApiAfterCreate;
 use extas\interfaces\stages\IStageApiBeforeCreate;
 use extas\interfaces\stages\IStageApiValidateInputData;
 use Psr\Http\Message\ResponseInterface;
@@ -41,9 +43,21 @@ trait TRouteCreate
             return $this->response;
         }
 
+        $this->created($item);
         $this->setResponseData($item->__toArray());
 
         return $this->response;
+    }
+
+    protected function created(IItem &$item): void
+    {
+        foreach(Plugins::byStage(IStageApiAfterCreate::NAME) as $plugin) {
+            $plugin($item);
+        }
+
+        foreach(Plugins::byStage(IStageApiAfterCreate::NAME . '.' . $this->repoName) as $plugin) {
+            $plugin($item);
+        }
     }
 
     protected function enrichData(array &$data): void

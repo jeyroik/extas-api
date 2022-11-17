@@ -1,12 +1,16 @@
 <?php
 namespace tests\routes;
 
-
+use extas\components\extensions\TExtendable;
 use extas\components\http\TSnuffHttp;
+use extas\components\plugins\Plugin;
 use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 use extas\components\routes\Route;
 use extas\interfaces\routes\descriptions\IJsonSchemaV1;
+use extas\interfaces\stages\IStageApiAfterCreate;
+use extas\interfaces\stages\IStageApiAfterDelete;
+use extas\interfaces\stages\IStageApiAfterUpdate;
 use extas\interfaces\stages\IStageApiBeforeCreate;
 use extas\interfaces\stages\IStageApiDeleteData;
 use extas\interfaces\stages\IStageApiListData;
@@ -14,6 +18,9 @@ use extas\interfaces\stages\IStageApiUpdateData;
 use extas\interfaces\stages\IStageApiValidateInputData;
 use extas\interfaces\stages\IStageApiViewData;
 use PHPUnit\Framework\TestCase;
+use tests\resources\PluginAfterCreate;
+use tests\resources\PluginAfterDelete;
+use tests\resources\PluginAfterUpdate;
 use tests\resources\PluginBeforeCreate;
 use tests\resources\PluginCreate;
 use tests\resources\PluginDelete;
@@ -39,6 +46,12 @@ class RouteTest extends TestCase
     use TSnuffRepository;
     use TSnuffPlugins;
     use TSnuffHttp;
+    use TExtendable;
+
+    protected function getSubjectForExtension(): string
+    {
+        return '';
+    }
 
     protected function setUp(): void
     {
@@ -75,6 +88,10 @@ class RouteTest extends TestCase
     public function testDispatcherForCreate()
     {
         $this->createSnuffPlugin(PluginCreate::class, [IStageApiValidateInputData::NAME.'.create.routes']);
+        $this->plugins()->create(new Plugin([
+            Plugin::FIELD__CLASS => PluginAfterCreate::class,
+            Plugin::FIELD__STAGE => [IStageApiAfterCreate::NAME, IStageApiAfterCreate::NAME . '.routes']
+        ]));
 
         $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
             'routes' => [
@@ -104,6 +121,9 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey('name', $result['data'], print_r($result['data'], true));
         $this->assertArrayHasKey('id', $result['data'], print_r($result['data'], true));
         $this->assertArrayHasKey('arg', $result['data'], print_r($result['data'], true));
+        $this->assertArrayHasKey('created', $result['data'], print_r($result['data'], true));
+
+        $this->assertEquals(2, $result['data']['created'], print_r($result['data'], true));
 
         $count = $r->routes()->all([]);
         $this->assertCount(1, $count);
@@ -218,6 +238,10 @@ class RouteTest extends TestCase
     public function testDispatcherForUpdate()
     {
         $this->createSnuffPlugin(PluginUpdate::class, [IStageApiUpdateData::NAME, IStageApiUpdateData::NAME . '.routes']);
+        $this->plugins()->create(new Plugin([
+            Plugin::FIELD__CLASS => PluginAfterUpdate::class,
+            Plugin::FIELD__STAGE => [IStageApiAfterUpdate::NAME, IStageApiAfterUpdate::NAME . '.routes']
+        ]));
 
         $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
             'routes' => [
@@ -247,6 +271,8 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayHasKey('name', $result['data']);
         $this->assertArrayHasKey('description', $result['data']);
+        $this->assertArrayHasKey('updated', $result['data'], print_r($result['data'], true));
+        $this->assertEquals(2, $result['data']['updated']);
 
         $update = new TestUpdateDispatcher(
             $this->getPsrRequest('.update-fail'),
@@ -264,6 +290,10 @@ class RouteTest extends TestCase
     public function testDispatcherForDelete()
     {
         $this->createSnuffPlugin(PluginDelete::class, [IStageApiDeleteData::NAME, IStageApiDeleteData::NAME . '.routes']);
+        $this->plugins()->create(new Plugin([
+            Plugin::FIELD__CLASS => PluginAfterDelete::class,
+            Plugin::FIELD__STAGE => [IStageApiAfterDelete::NAME, IStageApiAfterDelete::NAME . '.routes']
+        ]));
 
         $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
             'routes' => [

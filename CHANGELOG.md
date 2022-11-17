@@ -1,3 +1,10 @@
+# 1.7.0
+
+- Added stages:
+ - `IStageApiAfterCreate`
+ - `IStageApiAfterUpdate`
+ - `IStageApiAfterDelete`
+
 # 1.6.0
 
 - Added route `/help` with a list of all available routes. 
