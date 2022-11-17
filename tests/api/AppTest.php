@@ -3,6 +3,7 @@ namespace tests\api;
 
 use extas\interfaces\stages\IStageApiAppInit;
 use extas\components\api\App;
+use extas\components\http\TSnuffHttp;
 use extas\components\plugins\PluginRoutes;
 use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
@@ -20,6 +21,7 @@ class AppTest extends TestCase
 {
     use TSnuffRepository;
     use TSnuffPlugins;
+    use TSnuffHttp;
 
     protected function setUp(): void
     {
@@ -54,12 +56,50 @@ class AppTest extends TestCase
         $r->routes()->create(new Route([
             Route::FIELD__CLASS => TestDispatcher::class,
             Route::FIELD__NAME => 'test',
-            Route::FIELD__METHOD => Route::METHOD__CREATE
+            Route::FIELD__METHOD => Route::METHOD__CREATE,
+            Route::FIELD__TITLE => 'Test method',
+            Route::FIELD__DESCRIPTION => 'Test method for smoke tests'
         ]));
         $this->createSnuffPlugin(PluginRoutes::class, [IStageApiAppInit::NAME]);
         $app = App::create();
         // 1 - the route
         // 2 - the help route
-        $this->assertCount(2, $app->getRouteCollector()->getRoutes());
+        // 3 - the routes list
+        $this->assertCount(3, $app->getRouteCollector()->getRoutes());
+
+        $routes = $app->getRouteCollector()->getRoutes();
+        $request = $this->getPsrRequest();
+
+        foreach ($routes as $route) {
+            if ($route->getPattern() == '/help') {
+                $response = $route->run($request);
+                $result = $this->getJsonRpcResponse($response);
+                $this->assertEquals(
+                    [
+                        'data' => [
+                            [
+                                "route" => "/help",
+                                "title" => "Routes list",
+                                "description" => "The current route, shows all available routes",
+                                "method" => "get"
+                            ],
+                            [
+                                "route" => "test",
+                                "title" => "Test method",
+                                "description" => "Test method for smoke tests",
+                                "method" => "post"
+                            ],
+                            [
+                                "route" => "test/help",
+                                "title" => "Docs for Test method",
+                                "description" => "Help for route Test method",
+                                "method" => "get"
+                            ]
+                        ]
+                    ],
+                    $result
+                );
+            }
+        }
     }
 }
