@@ -1,18 +1,20 @@
 <?php
 namespace tests\resources;
 
-class TestDispatcher
-{
-    protected array $params = [];
+use extas\components\routes\dispatchers\JsonDispatcher;
+use Psr\Http\Message\ResponseInterface;
 
-    public function __construct(int $par1, int $par2)
+class TestDispatcher extends JsonDispatcher
+{
+    protected string $repoName = 'routes';
+
+    public function execute(): ResponseInterface
     {
-        $this->params[] = $par1;
-        $this->params[] = $par2;
+        return $this->response;
     }
 
-    public function getParams(): array
+    public function help(): ResponseInterface
     {
-        return $this->params;
+        return $this->response;
     }
 }

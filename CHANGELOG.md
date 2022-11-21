@@ -1,3 +1,9 @@
+# 1.8.0
+
+- Added stages:
+  - `IStageApiBeforeRouteExecute`
+  - `IStageApiAfterRouteExecute`
+
 # 1.7.0
 
 - Added stages:

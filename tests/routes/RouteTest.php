@@ -10,8 +10,10 @@ use extas\components\routes\Route;
 use extas\interfaces\routes\descriptions\IJsonSchemaV1;
 use extas\interfaces\stages\IStageApiAfterCreate;
 use extas\interfaces\stages\IStageApiAfterDelete;
+use extas\interfaces\stages\IStageApiAfterRouteExecute;
 use extas\interfaces\stages\IStageApiAfterUpdate;
 use extas\interfaces\stages\IStageApiBeforeCreate;
+use extas\interfaces\stages\IStageApiBeforeRouteExecute;
 use extas\interfaces\stages\IStageApiDeleteData;
 use extas\interfaces\stages\IStageApiListData;
 use extas\interfaces\stages\IStageApiUpdateData;
@@ -20,13 +22,16 @@ use extas\interfaces\stages\IStageApiViewData;
 use PHPUnit\Framework\TestCase;
 use tests\resources\PluginAfterCreate;
 use tests\resources\PluginAfterDelete;
+use tests\resources\PluginAfterRoute;
 use tests\resources\PluginAfterUpdate;
 use tests\resources\PluginBeforeCreate;
+use tests\resources\PluginBeforeRouteOk;
 use tests\resources\PluginCreate;
 use tests\resources\PluginDelete;
 use tests\resources\PluginList;
 use tests\resources\PluginUpdate;
 use tests\resources\PluginView;
+use tests\resources\Simple;
 use tests\resources\TestCreateDispatcher;
 use tests\resources\TestDeleteDispatcher;
 use tests\resources\TestDispatcher;
@@ -72,7 +77,7 @@ class RouteTest extends TestCase
         $r->setMethod(Route::METHOD__CREATE);
         $this->assertEquals(Route::METHOD__CREATE, $r->getMethod());
 
-        $r->setClass(TestDispatcher::class);
+        $r->setClass(Simple::class);
         $d = $r->buildDispatcher(1,2);
         $p = $d->getParams();
 

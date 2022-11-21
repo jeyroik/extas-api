@@ -3,12 +3,19 @@ namespace tests\api;
 
 use extas\interfaces\stages\IStageApiAppInit;
 use extas\components\api\App;
+use extas\components\extensions\TExtendable;
 use extas\components\http\TSnuffHttp;
+use extas\components\plugins\Plugin;
 use extas\components\plugins\PluginRoutes;
 use extas\components\plugins\TSnuffPlugins;
 use extas\components\repositories\TSnuffRepository;
 use extas\components\routes\Route;
+use extas\interfaces\stages\IStageApiAfterRouteExecute;
+use extas\interfaces\stages\IStageApiBeforeRouteExecute;
 use PHPUnit\Framework\TestCase;
+use tests\resources\PluginAfterRoute;
+use tests\resources\PluginBeforeRouteFailed;
+use tests\resources\PluginBeforeRouteOk;
 use tests\resources\TestDispatcher;
 
 /**
@@ -22,6 +29,7 @@ class AppTest extends TestCase
     use TSnuffRepository;
     use TSnuffPlugins;
     use TSnuffHttp;
+    use TExtendable;
 
     protected function setUp(): void
     {
@@ -34,6 +42,11 @@ class AppTest extends TestCase
         $this->dropDatabase(__DIR__);
         $this->deleteRepo('plugins');
         $this->deleteRepo('extensions');
+    }
+
+    protected function getSubjectForExtension(): string
+    {
+        return time();
     }
 
     public function testConstructing()
@@ -61,6 +74,15 @@ class AppTest extends TestCase
             Route::FIELD__DESCRIPTION => 'Test method for smoke tests'
         ]));
         $this->createSnuffPlugin(PluginRoutes::class, [IStageApiAppInit::NAME]);
+        $this->plugins()->create(new Plugin([
+            Plugin::FIELD__CLASS => PluginBeforeRouteOk::class,
+            Plugin::FIELD__STAGE => [IStageApiBeforeRouteExecute::NAME, IStageApiBeforeRouteExecute::NAME . '.routes']
+        ]));
+        $this->plugins()->create(new Plugin([
+            Plugin::FIELD__CLASS => PluginAfterRoute::class,
+            Plugin::FIELD__STAGE => [IStageApiAfterRouteExecute::NAME, IStageApiAfterRouteExecute::NAME . '.routes']
+        ]));
+
         $app = App::create();
         // 1 - the route
         // 2 - the help route
@@ -71,6 +93,16 @@ class AppTest extends TestCase
         $request = $this->getPsrRequest();
 
         foreach ($routes as $route) {
+            if ($route->getPattern() == 'test') {
+                $response = $route->run($request);
+                $this->assertEquals(405, $response->getStatusCode());
+
+                $this->createSnuffPlugin(PluginBeforeRouteFailed::class, [IStageApiBeforeRouteExecute::NAME]);
+
+                $response = $route->run($request);
+                $this->assertEquals(400, $response->getStatusCode());
+                $this->assertEquals('Error', $response->getBody() . '');
+            }
             if ($route->getPattern() == '/help') {
                 $response = $route->run($request);
                 $result = $this->getJsonRpcResponse($response);
