@@ -1,19 +1,23 @@
 <?php
 namespace tests\resources;
 
-use extas\components\routes\descriptions\TRouteHelp;
 use extas\components\routes\dispatchers\JsonDispatcher;
 use extas\components\routes\TRouteUpdate;
 use extas\interfaces\routes\IRoute;
+use Psr\Http\Message\ResponseInterface;
 
 class TestUpdateDispatcher extends JsonDispatcher
 {
-    use TRouteHelp;
     use TRouteUpdate;
 
     public static $tmp = 0;
 
     protected string $repoName = 'routes';
+
+    public function help(): ResponseInterface
+    {
+        return $this->response;
+    }
 
     protected function getWhere(): array
     {

@@ -4,6 +4,8 @@ namespace extas\components\routes;
 use extas\components\extensions\TExtendable;
 use extas\components\Plugins;
 use extas\interfaces\IItem;
+use extas\interfaces\stages\IStageApiAfterView;
+use extas\interfaces\stages\IStageApiBeforeView;
 use extas\interfaces\stages\IStageApiViewData;
 use Psr\Http\Message\ResponseInterface;
 
@@ -20,8 +22,10 @@ trait TRouteView
     public function execute(): ResponseInterface
     {
         try {
-            $item = $this->getItem();
-            $this->enrichData($item);
+            $where = $this->getWhere();
+            $this->before($where);
+            $item = $this->getItem($where);
+            $this->after($item);
             $this->setResponseData($item->__toArray());
         } catch (\Exception $e) {
             $this->setResponseData([], $e->getMessage());    
@@ -30,21 +34,30 @@ trait TRouteView
         return $this->response;
     }
 
-    protected function enrichData(IItem &$item): void
+    protected function before(array &$where): void
     {
-        foreach (Plugins::byStage(IStageApiViewData::NAME) as $plugin) {
+        foreach (Plugins::byStage(IStageApiBeforeView::NAME) as $plugin) {
+            $plugin($where, $this);
+        }
+
+        foreach (Plugins::byStage(IStageApiBeforeView::NAME . '.' . $this->repoName) as $plugin) {
+            $plugin($where, $this);
+        }
+    }
+
+    protected function after(IItem &$item): void
+    {
+        foreach (Plugins::byStage(IStageApiAfterView::NAME) as $plugin) {
             $plugin($item, $this);
         }
 
-        foreach (Plugins::byStage(IStageApiViewData::NAME . '.' . $this->repoName) as $plugin) {
+        foreach (Plugins::byStage(IStageApiAfterView::NAME . '.' . $this->repoName) as $plugin) {
             $plugin($item, $this);
         }
     }
 
-    protected function getItem(): IItem
+    protected function getItem(array $where): IItem
     {
-        $where = $this->getWhere();
-
         return $this->{$this->repoName}()->one($where);
     }
 }

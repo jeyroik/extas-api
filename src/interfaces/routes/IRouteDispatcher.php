@@ -14,4 +14,7 @@ interface IRouteDispatcher extends IExtendable
     public function execute(): ResponseInterface;
 
     public function help(): ResponseInterface;
+
+    public function getRoute(): string;
+    public function setRoute(string $route): IRouteDispatcher;
 }

@@ -1,3 +1,20 @@
+# 2.0.0
+
+- Removed all description functionallity, because it blures current package responsability.
+- Added stages:
+  - `IStageApiBeforeView`
+  - `IStageApiAfterView`
+  - `IStageApiBeforeList`
+  - `IStageApiAfterList`
+- Removed stages:
+  - `IStageApiViewData`
+  - `IStageApiValidateInputData`
+  - `IStageInputDescription`.
+  - `IStageOutputDescription`
+- Removed validation in TRouteCreate- now you should use stage `IStageApiBeforeCreate` for validation purposes.
+- Removed all validators interfaces and components.
+- Removed `formatResponseData()` method in `JsonDispatcher`.
+
 # 1.8.0
 
 - Added stages:

@@ -21,13 +21,37 @@ trait TRouteList
         try {
             $items = $this->getItems();
 
+            $this->before($items);
             $this->listData($items);
+            $this->after($items);
             $this->setResponseData($items);
         } catch (\Exception $e) {
             $this->setResponseData([], $e->getMessage());
         }
         
         return $this->response;
+    }
+
+    protected function before(array &$items): void
+    {
+        foreach (Plugins::byStage(IStageApiListData::NAME) as $plugin) {
+            $plugin($items, $this);
+        }
+
+        foreach (Plugins::byStage(IStageApiListData::NAME . '.' . $this->repoName) as $plugin) {
+            $plugin($items, $this);
+        }
+    }
+
+    protected function after(array &$items): void
+    {
+        foreach (Plugins::byStage(IStageApiListData::NAME) as $plugin) {
+            $plugin($items, $this);
+        }
+
+        foreach (Plugins::byStage(IStageApiListData::NAME . '.' . $this->repoName) as $plugin) {
+            $plugin($items, $this);
+        }
     }
 
     protected function listData(array &$items): void

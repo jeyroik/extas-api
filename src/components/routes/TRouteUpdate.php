@@ -25,9 +25,9 @@ trait TRouteUpdate
             $item = $this->getItem();
             $data = $this->getRequestData();
 
-            $this->enrichData($data);
+            $this->before($data);
             $this->updateData($item, $data);
-            $this->updated($item);
+            $this->after($item);
             $this->setResponseData($item->__toArray());
         } catch (\Exception $e) {
             $this->setResponseData([], $e->getMessage());
@@ -36,25 +36,25 @@ trait TRouteUpdate
         return $this->response;
     }
 
-    protected function updated(IItem &$item): void
+    protected function after(IItem &$item): void
     {
         foreach(Plugins::byStage(IStageApiAfterUpdate::NAME) as $plugin) {
-            $plugin($item);
+            $plugin($item, $this);
         }
 
         foreach(Plugins::byStage(IStageApiAfterUpdate::NAME . '.' . $this->repoName) as $plugin) {
-            $plugin($item);
+            $plugin($item, $this);
         }
     }
 
-    protected function enrichData(array &$data): void
+    protected function before(array &$data): void
     {
         foreach(Plugins::byStage(IStageApiBeforeUpdate::NAME) as $plugin) {
-            $plugin($data);
+            $plugin($data, $this);
         }
 
         foreach(Plugins::byStage(IStageApiBeforeUpdate::NAME . '.' . $this->repoName) as $plugin) {
-            $plugin($data);
+            $plugin($data, $this);
         }
     }
 

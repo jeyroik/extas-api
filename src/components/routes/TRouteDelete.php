@@ -5,6 +5,7 @@ use extas\components\extensions\TExtendable;
 use extas\components\Plugins;
 use extas\interfaces\IItem;
 use extas\interfaces\stages\IStageApiAfterDelete;
+use extas\interfaces\stages\IStageApiBeforeDelete;
 use extas\interfaces\stages\IStageApiDeleteData;
 use Psr\Http\Message\ResponseInterface;
 
@@ -22,8 +23,9 @@ trait TRouteDelete
     {
         try {
             $item = $this->getItem();
+            $this->before($item);
             $this->deleteData($item);
-            $this->deleted($item);
+            $this->after($item);
             $this->setResponseData($item->__toArray());
         } catch (\Exception $e) {
             $this->setResponseData([], $e->getMessage());
@@ -32,7 +34,18 @@ trait TRouteDelete
         return $this->response;
     }
 
-    protected function deleted(IItem &$item): void
+    protected function before(IItem &$item): void
+    {
+        foreach (Plugins::byStage(IStageApiBeforeDelete::NAME) as $plugin) {
+            $plugin($item, $this);
+        }
+
+        foreach (Plugins::byStage(IStageApiBeforeDelete::NAME . '.' . $this->repoName) as $plugin) {
+            $plugin($item, $this);
+        }
+    }
+
+    protected function after(IItem &$item): void
     {
         foreach (Plugins::byStage(IStageApiAfterDelete::NAME) as $plugin) {
             $plugin($item, $this);

@@ -13,12 +13,25 @@ abstract class RouteDispatcher implements IRouteDispatcher
     protected ?RequestInterface $request = null;
     protected ?ResponseInterface $response = null;
     protected array $args = [];
+    protected string $route = '';
 
     public function __construct($request, $response, $args)
     {
         $this->request = $request;
         $this->response = $response;
         $this->args = $args;
+    }
+
+    public function getRoute(): string
+    {
+        return $this->route;
+    }
+
+    public function setRoute(string $route): IRouteDispatcher
+    {
+        $this->route = $route;
+
+        return $this;
     }
 
     protected function getSubjectForExtension(): string
