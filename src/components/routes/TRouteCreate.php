@@ -1,7 +1,6 @@
 <?php
 namespace extas\components\routes;
 
-use extas\components\exceptions\AlreadyExist;
 use extas\components\extensions\TExtendable;
 use extas\components\Plugins;
 use extas\interfaces\IItem;
@@ -9,7 +8,6 @@ use extas\interfaces\stages\IStageApiAfterCreate;
 use extas\interfaces\stages\IStageApiBeforeCreate;
 use extas\interfaces\stages\IStageApiValidateInputData;
 use Psr\Http\Message\ResponseInterface;
-use ReflectionClass;
 
 /**
  * @method array getRequestData()
@@ -17,6 +15,7 @@ use ReflectionClass;
  * 
  * @property string $repoName
  * @property array $validators
+ * @property bool $isDebug
  */
 trait TRouteCreate
 {
@@ -26,48 +25,41 @@ trait TRouteCreate
     {
         $data = $this->getRequestData();
 
-        if (!$this->isValidData($data)) {
-            $this->setResponseData([], 'Invalid data');
-            return $this->response;
-        }
-
         try {
-            $this->enrichData($data);
+            $this->before($data);
 
             $class = $this->{$this->repoName}()->getItemClass();
-            $item = new $class($data);
-        
-            $item = $this->{$this->repoName}()->create($item);
+            $item  = new $class($data);
+            $item  = $this->{$this->repoName}()->create($item);
+            
+            $this->after($item);
+            $this->setResponseData($item->__toArray());
         } catch (\Exception $e) {
             $this->setResponseData($data, $e->getMessage());
-            return $this->response;
         }
-
-        $this->created($item);
-        $this->setResponseData($item->__toArray());
 
         return $this->response;
     }
 
-    protected function created(IItem &$item): void
+    protected function after(IItem &$item): void
     {
         foreach(Plugins::byStage(IStageApiAfterCreate::NAME) as $plugin) {
-            $plugin($item);
+            $plugin($item, $this);
         }
 
         foreach(Plugins::byStage(IStageApiAfterCreate::NAME . '.' . $this->repoName) as $plugin) {
-            $plugin($item);
+            $plugin($item, $this);
         }
     }
 
-    protected function enrichData(array &$data): void
+    protected function before(array &$data): void
     {
         foreach(Plugins::byStage(IStageApiBeforeCreate::NAME) as $plugin) {
-            $plugin($data);
+            $plugin($data, $this);
         }
 
         foreach(Plugins::byStage(IStageApiBeforeCreate::NAME . '.' . $this->repoName) as $plugin) {
-            $plugin($data);
+            $plugin($data, $this);
         }
     }
 

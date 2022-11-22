@@ -78,19 +78,16 @@ namespace some\routes;
 
 use extas\components\routes\dispatchers\JsonDispatcher;
 
-/**
- * @api__input_method get
- * @api__input.id(required=true,validate=\extas\components\routes\validators\VUUID,description="ID",type=uuid,edges=[36])
- * @api__input.name(required=true,validate=0,description="Name",type=string,edges=[1,36])
- * 
- * @api__output.one \my\interfaces\IMyItem
- */
 class ClassName extends JsonDispatcher
 {
     use TRouteList;
-    use TRouteHelp;
 
     protected string $repoName = 'my_items';
+
+    public function help(): ResponseInterface
+    {
+        //...
+    }
 }
 ```
 
@@ -99,23 +96,12 @@ class ClassName extends JsonDispatcher
 <?php
 namespace my\interfaces;
 
-/**
- * Route
- * 
- * @field.id(description="Route ID",type=uuid,edges=[36])
- * @field.name(description="Route name",type=string,edges[1,50])
- * @field.title(description="Route title",type=string,edges[1,30])
- * @field.description(description="Route description",type=string,edges[1,100])
- * @field.method(description="Route method",type=string,edges[3,6])
- * @field.class(description="Route dispatcher class",type=string,edges[200])
- */
 class IMyItem
 {
     //...
 }
 ```
 
-From here you can touch 2 routes:
+From here you can touch:
 
 - GET /json/v1/my-items : you should see a list of my_items items.
-- GET /json/v1/my-items/help : you should see request/response description.

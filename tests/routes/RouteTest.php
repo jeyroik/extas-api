@@ -10,23 +10,17 @@ use extas\components\routes\Route;
 use extas\interfaces\routes\descriptions\IJsonSchemaV1;
 use extas\interfaces\stages\IStageApiAfterCreate;
 use extas\interfaces\stages\IStageApiAfterDelete;
-use extas\interfaces\stages\IStageApiAfterRouteExecute;
 use extas\interfaces\stages\IStageApiAfterUpdate;
+use extas\interfaces\stages\IStageApiAfterView;
 use extas\interfaces\stages\IStageApiBeforeCreate;
-use extas\interfaces\stages\IStageApiBeforeRouteExecute;
 use extas\interfaces\stages\IStageApiDeleteData;
 use extas\interfaces\stages\IStageApiListData;
 use extas\interfaces\stages\IStageApiUpdateData;
-use extas\interfaces\stages\IStageApiValidateInputData;
-use extas\interfaces\stages\IStageApiViewData;
 use PHPUnit\Framework\TestCase;
 use tests\resources\PluginAfterCreate;
 use tests\resources\PluginAfterDelete;
-use tests\resources\PluginAfterRoute;
 use tests\resources\PluginAfterUpdate;
 use tests\resources\PluginBeforeCreate;
-use tests\resources\PluginBeforeRouteOk;
-use tests\resources\PluginCreate;
 use tests\resources\PluginDelete;
 use tests\resources\PluginList;
 use tests\resources\PluginUpdate;
@@ -34,8 +28,6 @@ use tests\resources\PluginView;
 use tests\resources\Simple;
 use tests\resources\TestCreateDispatcher;
 use tests\resources\TestDeleteDispatcher;
-use tests\resources\TestDispatcher;
-use tests\resources\TestExceptionDispatcher;
 use tests\resources\TestListDispatcher;
 use tests\resources\TestUpdateDispatcher;
 use tests\resources\TestViewDispatcher;
@@ -92,11 +84,7 @@ class RouteTest extends TestCase
 
     public function testDispatcherForCreate()
     {
-        $this->createSnuffPlugin(PluginCreate::class, [IStageApiValidateInputData::NAME.'.create.routes']);
-        $this->plugins()->create(new Plugin([
-            Plugin::FIELD__CLASS => PluginAfterCreate::class,
-            Plugin::FIELD__STAGE => [IStageApiAfterCreate::NAME, IStageApiAfterCreate::NAME . '.routes']
-        ]));
+        $this->createSnuffPlugin(PluginAfterCreate::class, [IStageApiAfterCreate::NAME, IStageApiAfterCreate::NAME . '.routes']);
 
         $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
             'routes' => [
@@ -132,26 +120,6 @@ class RouteTest extends TestCase
 
         $count = $r->routes()->all([]);
         $this->assertCount(1, $count);
-
-        $createFalse = new TestCreateDispatcher(
-            $this->getPsrRequest('.create-false-local'),
-            $this->getPsrResponse(),
-            []
-        );
-
-        $response = $createFalse->execute();
-        $result = $this->getJsonRpcResponse($response);
-        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
-
-        $createFalse = new TestCreateDispatcher(
-            $this->getPsrRequest('.create-false-plugin'),
-            $this->getPsrResponse(),
-            []
-        );
-
-        $response = $createFalse->execute();
-        $result = $this->getJsonRpcResponse($response);
-        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result, print_r($result, true));
     }
 
     public function testDispatcherForEnrichBeforeCreate()
@@ -194,7 +162,7 @@ class RouteTest extends TestCase
 
     public function testDispatcherForView()
     {
-        $this->createSnuffPlugin(PluginView::class, [IStageApiViewData::NAME, IStageApiViewData::NAME . '.routes']);
+        $this->createSnuffPlugin(PluginView::class, [IStageApiAfterView::NAME, IStageApiAfterView::NAME . '.routes']);
 
         $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
             'routes' => [
@@ -393,72 +361,5 @@ class RouteTest extends TestCase
         $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result);
 
         $this->deleteRepo('routes');
-    }
-
-    public function testDispatcherForException()
-    { 
-        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
-            'routes2' => [
-                'namespace' => 'tests\\tmp',
-                'item_class' => 'extas\\components\\routes\\Route',
-                'pk' => 'id',
-                'code' => [
-                    'create-before' => 'throw new \\extas\\components\\exceptions\\AlreadyExist("route");'
-                ]
-            ]
-        ]);
-
-        $except = new TestExceptionDispatcher(
-            $this->getPsrRequest('.create-true'),
-            $this->getPsrResponse(),
-            []
-        );
-
-        $response = $except->execute();
-        $result = $this->getJsonRpcResponse($response);
-
-        $this->assertArrayHasKey('data', $result);
-        $this->assertArrayHasKey(IJsonSchemaV1::FIELD__ERROR, $result, print_r($result, true));
-
-        $this->deleteRepo('routes2');
-    }
-
-    public function testHelp()
-    { 
-        $this->buildRepo(__DIR__ . '/../../vendor/jeyroik/extas-foundation/resources/', [
-            'routes2' => [
-                'namespace' => 'tests\\tmp',
-                'item_class' => 'extas\\components\\routes\\Route',
-                'pk' => 'id',
-                'code' => [
-                    'create-before' => 'throw new \\extas\\components\\exceptions\\AlreadyExist("route");'
-                ]
-            ]
-        ]);
-
-        $except = new TestExceptionDispatcher(
-            $this->getPsrRequest('.create-true'),
-            $this->getPsrResponse(),
-            []
-        );
-
-        $response = $except->help();
-        $result = $this->getJsonRpcResponse($response);
-
-        $this->assertArrayHasKey('data', $result, print_r($result,true));
-        $this->assertArrayHasKey('request', $result['data'], print_r($result,true));
-        $this->assertArrayHasKey('method', $result['data']['request'], print_r($result,true));
-        $this->assertArrayHasKey('parameters', $result['data']['request'], print_r($result,true));
-        $this->assertArrayHasKey('id', $result['data']['request']['parameters'], print_r($result,true));
-        $this->assertArrayHasKey('name', $result['data']['request']['parameters'], print_r($result,true));
-
-        $this->assertArrayHasKey('response', $result['data'], print_r($result,true));
-        $this->assertArrayHasKey('name', $result['data']['response'], print_r($result,true));
-        $this->assertArrayHasKey('title', $result['data']['response'], print_r($result,true));
-        $this->assertArrayHasKey('description', $result['data']['response'], print_r($result,true));
-        $this->assertArrayHasKey('method', $result['data']['response'], print_r($result,true));
-        $this->assertArrayHasKey('class', $result['data']['response'], print_r($result,true));
-
-        $this->deleteRepo('routes2');
     }
 }

@@ -51,8 +51,12 @@ class PluginRoutes extends Plugin implements IStageApiAppInit
             if (!$this->beforeRouteExecute($request, $response, $args, $route)) {
                 return $response;
             }
+
+            /**
+             * @var IRouteDispatcher $dispatcher
+             */
             $dispatcher = $route->buildDispatcher($request, $response, $args);
-            $response = $dispatcher->execute();
+            $response = $dispatcher->setRoute($route->getName())->execute();
             
             $this->afterRouteExecute($request, $response, $args, $route);
 

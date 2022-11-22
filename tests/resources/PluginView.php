@@ -7,12 +7,12 @@ use extas\interfaces\IItem;
 use extas\interfaces\repositories\IRepository;
 use extas\interfaces\routes\IRoute;
 use extas\interfaces\routes\IRouteDispatcher;
-use extas\interfaces\stages\IStageApiViewData;
+use extas\interfaces\stages\IStageApiAfterView;
 
 /**
  * @method IRepository routes()
  */
-class PluginView extends Plugin implements IStageApiViewData
+class PluginView extends Plugin implements IStageApiAfterView
 {
     use TExtendable;
 
