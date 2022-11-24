@@ -17,9 +17,6 @@ class TestCreateDispatcher extends JsonDispatcher
     use TRouteCreate;
 
     protected string $repoName = 'routes';
-    protected array $validators = [
-        'isName'
-    ];
 
     public function help(): ResponseInterface
     {

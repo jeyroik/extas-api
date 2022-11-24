@@ -1,3 +1,7 @@
+# 3.0.0
+
+- `IRouteDispatcher::getRoute()` now returns `IRoute` object.
+
 # 2.0.0
 
 - Removed all description functionallity, because it blures current package responsability.

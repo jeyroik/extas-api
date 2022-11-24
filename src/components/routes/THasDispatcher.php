@@ -10,6 +10,7 @@ trait THasDispatcher
 
     public function buildDispatcher(...$params): mixed
     {
+        $params[] = $this;
         $className = $this->getClass();
         $class = class_exists($className)
             ? new $className(...$params)

@@ -9,12 +9,12 @@ interface IRouteDispatcher extends IExtendable
 {
     public const SUBJECT = 'extas.route.dispatcher';
 
-    public function __construct(RequestInterface $request, ResponseInterface $response, array $args);
+    public function __construct(RequestInterface $request, ResponseInterface $response, array $args, IRoute $route);
 
     public function execute(): ResponseInterface;
 
     public function help(): ResponseInterface;
 
-    public function getRoute(): string;
-    public function setRoute(string $route): IRouteDispatcher;
+    public function getRoute(): IRoute;
+    public function setRoute(IRoute $route): IRouteDispatcher;
 }
