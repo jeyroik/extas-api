@@ -5,6 +5,7 @@ use extas\components\extensions\TExtendable;
 use extas\components\Plugins;
 use extas\components\plugins\Plugin;
 use extas\components\routes\dispatchers\HelpDispatcher;
+use extas\components\routes\Route;
 use extas\interfaces\stages\IStageApiAppInit;
 use extas\interfaces\routes\IRoute;
 use extas\interfaces\routes\IRouteDispatcher;
@@ -56,7 +57,7 @@ class PluginRoutes extends Plugin implements IStageApiAppInit
              * @var IRouteDispatcher $dispatcher
              */
             $dispatcher = $route->buildDispatcher($request, $response, $args);
-            $response = $dispatcher->setRoute($route->getName())->execute();
+            $response = $dispatcher->execute();
             
             $this->afterRouteExecute($request, $response, $args, $route);
 
@@ -113,7 +114,10 @@ class PluginRoutes extends Plugin implements IStageApiAppInit
     protected function getHelpDispatcher($request, $response, array $args): IRouteDispatcher
     {
         HelpDispatcher::$routesList = $this->routesList;
-        return new HelpDispatcher($request, $response, $args);
+        return new HelpDispatcher($request, $response, $args, new Route([
+            Route::FIELD__NAME => '/help',
+            Route::FIELD__METHOD => IRoute::METHOD__READ
+        ]));
     }
 
     protected function attachToRouteslist(IRoute $route): void

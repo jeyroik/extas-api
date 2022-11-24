@@ -104,7 +104,8 @@ class RouteTest extends TestCase
         $create = new TestCreateDispatcher(
             $this->getPsrRequest('.create-true'),
             $this->getPsrResponse(),
-            ['arg' => 'ok']
+            ['arg' => 'ok'],
+            $r
         );
 
         $response = $create->execute();
@@ -144,7 +145,8 @@ class RouteTest extends TestCase
         $create = new TestCreateDispatcher(
             $this->getPsrRequest('.create-true'),
             $this->getPsrResponse(),
-            ['arg' => 'ok']
+            ['arg' => 'ok'],
+            $r
         );
 
         $response = $create->execute();
@@ -176,7 +178,7 @@ class RouteTest extends TestCase
         ]);
 
         $r = new Route();
-        $r->routes()->create(new Route([
+        $r = $r->routes()->create(new Route([
             Route::FIELD__NAME => '/',
             Route::FIELD__DESCRIPTION => 'test'
         ]));
@@ -184,7 +186,8 @@ class RouteTest extends TestCase
         $view = new TestViewDispatcher(
             $this->getPsrRequest('.view'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $view->execute();
@@ -198,7 +201,8 @@ class RouteTest extends TestCase
         $view = new TestViewDispatcher(
             $this->getPsrRequest('.view-fail'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $view->execute();
@@ -228,14 +232,15 @@ class RouteTest extends TestCase
         ]);
 
         $r = new Route();
-        $r->routes()->create(new Route([
+        $r = $r->routes()->create(new Route([
             Route::FIELD__NAME => '/'
         ]));
 
         $update = new TestUpdateDispatcher(
             $this->getPsrRequest('.update'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $update->execute();
@@ -250,7 +255,8 @@ class RouteTest extends TestCase
         $update = new TestUpdateDispatcher(
             $this->getPsrRequest('.update-fail'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $update->execute();
@@ -280,7 +286,7 @@ class RouteTest extends TestCase
         ]);
 
         $r = new Route();
-        $r->routes()->create(new Route([
+        $r = $r->routes()->create(new Route([
             Route::FIELD__NAME => '/'
         ]));
 
@@ -288,7 +294,8 @@ class RouteTest extends TestCase
         $delete = new TestDeleteDispatcher(
             $this->getPsrRequest('.delete'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $delete->execute();
@@ -304,7 +311,8 @@ class RouteTest extends TestCase
         $delete = new TestDeleteDispatcher(
             $this->getPsrRequest('.delete-fail'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $delete->execute();
@@ -330,7 +338,7 @@ class RouteTest extends TestCase
         ]);
 
         $r = new Route();
-        $r->routes()->create(new Route([
+        $r = $r->routes()->create(new Route([
             Route::FIELD__NAME => '/'
         ]));
 
@@ -338,7 +346,8 @@ class RouteTest extends TestCase
         $list = new TestListDispatcher(
             $this->getPsrRequest('.list'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $list->execute();
@@ -351,7 +360,8 @@ class RouteTest extends TestCase
         $list = new TestListDispatcher(
             $this->getPsrRequest('.list-fail'),
             $this->getPsrResponse(),
-            []
+            [],
+            $r
         );
 
         $response = $list->execute();
